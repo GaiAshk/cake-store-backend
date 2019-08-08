@@ -9,6 +9,22 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
+/////////// added and should be removed later
+
+// Let any client request rest api calls
+const allowCrossDomain = function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header(
+     "Access-Control-Allow-Headers",
+     "Content-Type, x-requested-with, authorization"
+  );
+  next();
+};
+app.use(allowCrossDomain);
+
+//////////////////
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
