@@ -3,14 +3,31 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+
 var app = express();
 
-/////////// added and should be removed later
+// added from log in tutorial
+const config = require('./config/config');
+//const webpackConfig = require('./webpack.config');
+const isDev = process.env.NODE_ENV !== 'production';
+///
 
+
+//engine set up
+
+//connect to database
+// Set up Mongoose
+mongoose.connect(config.db_dev, {useNewUrlParser : true});
+mongoose.Promise = global.Promise;
+
+//mongoose.connect('mongodb://127.0.0.1:27017/login', {useNewUrlParser : true});
+
+/////////// added and should be removed later
 // Let any client request rest api calls
 const allowCrossDomain = function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -22,7 +39,6 @@ const allowCrossDomain = function(req, res, next) {
   next();
 };
 app.use(allowCrossDomain);
-
 //////////////////
 
 // view engine setup
@@ -37,6 +53,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
