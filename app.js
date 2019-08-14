@@ -1,15 +1,15 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var mongoose = require('mongoose');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const mongoose = require('mongoose');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+//import of index and users
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
 
-
-var app = express();
+const app = express();
 
 // added from log in tutorial
 const config = require('./config/config');
@@ -17,13 +17,11 @@ const config = require('./config/config');
 const isDev = process.env.NODE_ENV !== 'production';
 ///
 
-
-//engine set up
-
 //connect to database
 // Set up Mongoose
 mongoose.connect(config.db_dev, {useNewUrlParser : true});
 mongoose.Promise = global.Promise;
+console.log("connected to mongoose DB");
 
 //mongoose.connect('mongodb://127.0.0.1:27017/login', {useNewUrlParser : true});
 
@@ -31,11 +29,8 @@ mongoose.Promise = global.Promise;
 // Let any client request rest api calls
 const allowCrossDomain = function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-  res.header(
-     "Access-Control-Allow-Headers",
-     "Content-Type, x-requested-with, authorization"
-  );
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type, x-requested-with, authorization, Origin, Accept, auth-token");
   next();
 };
 app.use(allowCrossDomain);
@@ -45,12 +40,14 @@ app.use(allowCrossDomain);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+//middleware
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//routes middleware
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 

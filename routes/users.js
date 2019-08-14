@@ -1,7 +1,13 @@
-var express = require("express");
-var app = express.Router();
+const express = require("express");
+const app = express.Router();
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const UserSession = require('../models/UserSession');
+const dotenv = require('dotenv');
+const verify = require('./verifyToken');
+
+//allowed access to .env file
+dotenv.config();
 
 //helper function to check valid username and password
 searchUserPass = (username, password) => {
@@ -73,6 +79,7 @@ app.post('/signup', (req, res, next) => {
           message: 'Error: Server error'
         });
       }
+      console.log("User Sign Up Complete");
       return res.send({
         success: true,
         message: 'Signed Up',
@@ -112,7 +119,7 @@ app.post('/signin', (req, res, next) => {
     if (users.length !== 1){
       return res.send({
         success: false,
-        message: 'Error: Invalid username',
+        message: 'Error: this username does not exist, you must register before log in',
       })
     }
 
@@ -129,6 +136,10 @@ app.post('/signin', (req, res, next) => {
     // otherwise we have a correct user
     //enter user session
 
+    //create and assign a token from jwt that expires in 5 minutes
+    const JWTtoken = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET, {expiresIn: 60});
+
+
     const userSession = new UserSession();
     userSession.userId = user._id;
     userSession.save((err, doc) => {
@@ -138,11 +149,13 @@ app.post('/signin', (req, res, next) => {
           message: 'Error: server error',
         })
       }
-
-      return res.send({
+      console.log("User Sign In Complete");
+      return res.header('auth-token', JWTtoken).send({
         success: true,
         message: 'Valid sign in',
         token: doc._id,
+        JWTtoken: JWTtoken,
+        userId: doc.userId,
       })
     })
 
@@ -150,7 +163,7 @@ app.post('/signin', (req, res, next) => {
 });
 
 //**//   verify //**//
-app.get('/verify', (req, res, next) => {
+app.get('/verify', verify, (req, res, next) => {
   //Get the token
   const {query} = req;
   const {token} = query;
@@ -169,17 +182,21 @@ app.get('/verify', (req, res, next) => {
     if(sessions.length != 1){
       return res.send({
         success: false,
-        message: 'Error: Invalid',
+        message: 'Error: Invalid Token',
       });
     } else {
+      //create and assign a token from jwt that expires in 5 minutes, 300 seconds
+      const JWTtoken = jwt.sign({_id: token}, process.env.TOKEN_SECRET, {expiresIn: 60});
+
       return res.send({
         success: true,
-        message: 'Verified',
+        message: 'Verified, JWTtoken updated',
+        JWTtoken: JWTtoken,
       });
     }
-
   })
 });
+
 
 //**//   log out //**//
 app.get('/logout', (req, res, next) => {
@@ -187,7 +204,7 @@ app.get('/logout', (req, res, next) => {
   const {query} = req;
   const {token} = query;
 
-  //verify the token is one of a kind and it is
+  //verify the token is one of a kind
   UserSession.findOneAndUpdate({
     _id: token,
     isDeleted: false,
@@ -201,10 +218,11 @@ app.get('/logout', (req, res, next) => {
       });
     }
 
-      return res.send({
-        success: true,
-        message: 'Verified',
-      });
+    console.log("User Sign Out Complete");
+    return res.send({
+      success: true,
+      message: 'Verified',
+    });
   })
 });
 
