@@ -209,19 +209,19 @@ app.get('/logout', (req, res, next) => {
     _id: token,
     isDeleted: false,
   },
-  {$set: {isDeleted: true}}
-  , null,  (err, sessions) => {
+  {isDeleted: true}
+  , {new: true}, (err, sessions) => {
     if(err) {
       return res.send({
         success: false,
-        message: 'Error: Server Error',
+        message: 'Error: Server Error, could not log out',
       });
     }
 
     console.log("User Sign Out Complete");
     return res.send({
       success: true,
-      message: 'Verified',
+      message: 'Logged Out',
     });
   })
 });
