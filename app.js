@@ -19,7 +19,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 //connect to database
 // Set up Mongoose
-mongoose.connect(config.db_dev, {useNewUrlParser : true});
+mongoose.connect(config.db_dev, {useNewUrlParser : true, useFindAndModify: false});
 mongoose.Promise = global.Promise;
 console.log("connected to mongoose DB");
 

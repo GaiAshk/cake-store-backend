@@ -142,6 +142,7 @@ app.post('/signin', (req, res, next) => {
 
     const userSession = new UserSession();
     userSession.userId = user._id;
+    userSession.userName = user.username;
     userSession.save((err, doc) => {
       if(err){
         return res.send({
@@ -168,7 +169,7 @@ app.get('/verify', verify, (req, res, next) => {
   const {query} = req;
   const {token} = query;
 
-  //verify the token is one of a kind and it is
+  //verify the token is one of a kind and if it is update isDeleted in DB
   UserSession.find({
     _id: token,
     isDeleted: false,
@@ -186,7 +187,7 @@ app.get('/verify', verify, (req, res, next) => {
       });
     } else {
       //create and assign a token from jwt that expires in 5 minutes, 300 seconds
-      const JWTtoken = jwt.sign({_id: token}, process.env.TOKEN_SECRET, {expiresIn: 60});
+      const JWTtoken = jwt.sign({_id: token}, process.env.TOKEN_SECRET, {expiresIn: 300});
 
       return res.send({
         success: true,
@@ -197,20 +198,19 @@ app.get('/verify', verify, (req, res, next) => {
   })
 });
 
-
 //**//   log out //**//
 app.get('/logout', (req, res, next) => {
   //Get the token
   const {query} = req;
   const {token} = query;
 
-  //verify the token is one of a kind
+  //verify the token is one of a kin
   UserSession.findOneAndUpdate({
     _id: token,
     isDeleted: false,
   },
-  {isDeleted: true}
-  , {new: true}, (err, sessions) => {
+  {$set: {isDeleted: true} },
+  {new: true}, (err, sessions) => {
     if(err) {
       return res.send({
         success: false,
@@ -226,5 +226,106 @@ app.get('/logout', (req, res, next) => {
   })
 });
 
+// ** // updateing database for tracking customers // ** //
+// update cart of users
+app.post('/updatecart', (req, res, next) => {
+  const {body, query} = req;
+  const {cart} = body;
+  const {token} = query;
+
+  //verify the token is one of a kind and update cart in DB
+  UserSession.findOneAndUpdate({
+       _id: token,
+     },
+     {$set: {cart: cart}}
+     , {new: true}, (err, sessions) => {
+       if(err) {
+         return res.send({
+           success: false,
+           message: 'Error: Server Error, could not update cart',
+         });
+       }
+
+       console.log("cart updated");
+       return res.send({
+         success: true,
+         message: 'Cart updated in DB',
+       });
+     })
+});
+
+//update My Recipes
+app.post('/myrecipe', (req, res, next) => {
+  const {body, query} = req;
+  const {myRecipes} = body;
+  const {token} = query;
+
+  //verify the token is one of a kind and update cart in DB
+  UserSession.findOneAndUpdate({
+       _id: token,
+     },
+     {$set: {myRecipes: myRecipes}}
+     , {new: true}, (err, sessions) => {
+       if(err) {
+         return res.send({
+           success: false,
+           message: 'Error: Server Error, could not update My Recipes',
+         });
+       }
+
+       console.log("My Recipes updated");
+       return res.send({
+         success: true,
+         message: 'My Recipes updated in DB',
+       });
+     })
+});
+
+//update recipe searches
+app.post('/searches', (req, res, next) => {
+  const {body, query} = req;
+  const {searches} = body;
+  const {token} = query;
+
+  console.log(searches);
+
+  //verify the token is one of a kind and update cart in DB
+  UserSession.findOneAndUpdate({
+       _id: token,
+     },
+     {$set: {searches: searches}}
+     , {new: true}, (err, sessions) => {
+       if(err) {
+         return res.send({
+           success: false,
+           message: 'Error: Server Error, could not update searches',
+         });
+       }
+
+       console.log("searches updated");
+       return res.send({
+         success: true,
+         message: 'Searches updated in DB',
+       });
+     })
+});
+
+//get all data from DB
+app.get('/alldata', (req, res, next) => {
+   const {query} = req;
+   const {filter} = query;
+
+   UserSession.find({}, (err, sessions) => {
+         if(err) {
+            return res.send({
+               success: false,
+               message: 'Error: Server Error, could not fetch all the data from the DB',
+            });
+         }
+
+         console.log("fetched all the data from DB for the Admin");
+         return res.send(sessions);
+      })
+});
 
 module.exports = app;
