@@ -69,9 +69,13 @@ app.post('/signup', (req, res, next) => {
 
     //save the new user
     const newUser = new User();
+    const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    console.log(date);
 
     newUser.username = username;
     newUser.password = newUser.generateHash(password);
+    newUser.date = date;
+
     newUser.save((err, user) => {
       if(err){
         return res.send({

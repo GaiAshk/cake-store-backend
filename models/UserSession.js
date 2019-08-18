@@ -11,7 +11,7 @@ const UserSessionSchema = new mongoose.Schema({
    },
    timestamp: {
       type: Date,
-      default: Date.now(),
+      default: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
    },
    cart: {
       type: Array,
