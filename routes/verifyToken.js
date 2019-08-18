@@ -4,7 +4,10 @@ module.exports = function(req, res, next) {
    const JWTtoken = req.header('auth-token');
    if (!JWTtoken) {
       console.log("JWTtoken is not in header, Access Denied");
-      return res.status(401).send('Access Denied, no JWTtoken in header');
+      return res.status(401).send({
+         success: false,
+         message: 'Access Denied, no JWTtoken in header',
+      });
    }
 
    try {

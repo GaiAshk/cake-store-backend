@@ -141,7 +141,7 @@ app.post('/signin', (req, res, next) => {
     //enter user session
 
     //create and assign a token from jwt that expires in 5 minutes
-    const JWTtoken = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET, {expiresIn: 60});
+    const JWTtoken = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET, {expiresIn: 300});
 
 
     const userSession = new UserSession();
@@ -168,6 +168,7 @@ app.post('/signin', (req, res, next) => {
 });
 
 //**//   verify //**//
+// useing the verify function to verify that the token is valid (in './routes/verufyToken.js')
 app.get('/verify', verify, (req, res, next) => {
   //Get the token
   const {query} = req;
@@ -218,7 +219,7 @@ app.get('/logout', (req, res, next) => {
     if(err) {
       return res.send({
         success: false,
-        message: 'Error: Server Error, could not log out',
+        message: 'Error: Could not log out',
       });
     }
 
@@ -291,8 +292,6 @@ app.post('/searches', (req, res, next) => {
   const {searches} = body;
   const {token} = query;
 
-  console.log(searches);
-
   //verify the token is one of a kind and update cart in DB
   UserSession.findOneAndUpdate({
        _id: token,
@@ -317,9 +316,18 @@ app.post('/searches', (req, res, next) => {
 //get all data from DB
 app.get('/alldata', (req, res, next) => {
    const {query} = req;
-   const {filter} = query;
+   const {token} = query;
 
-   UserSession.find({}, (err, sessions) => {
+   if(token !== '5d516bfe2370fe2f48829038'){
+     return res.send({
+       success: false,
+       message: 'Error: only admin can request this data',
+     });
+
+   }
+
+
+  UserSession.find({}, (err, sessions) => {
          if(err) {
             return res.send({
                success: false,
@@ -328,7 +336,10 @@ app.get('/alldata', (req, res, next) => {
          }
 
          console.log("fetched all the data from DB for the Admin");
-         return res.send(sessions);
+         return res.send({
+           data: sessions,
+           message: "fetched all the data from DB for the Admin",
+         });
       })
 });
 
