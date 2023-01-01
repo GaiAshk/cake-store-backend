@@ -27,6 +27,6 @@
   "devDependencies": {
     "clean-css": "^4.2.1",
     "helmet": "^3.20.0",
-    "webpack": "^4.39.1"
+    "webpack": "^5.75.0"
   }
 }
